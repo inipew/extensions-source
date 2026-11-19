@@ -3,6 +3,8 @@ import hashlib
 import html
 import json
 import math
+import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -18,7 +20,7 @@ ARTIFACTS_DIR = Path.home() / "apk-artifacts"
 # The checked-out `repo` branch we publish into (the working directory).
 REPO_DIR = Path.cwd()
 
-ICON_BASE_URL = "https://cdn.jsdelivr.net/gh/keiyoushi/extensions-source@main"
+ICON_BASE_URL = "https://cdn.jsdelivr.net/gh/inipew/extensions-source@main"
 RELEASE_BASE_URL = f"https://github.com/{REPO_NAME}/releases/download"
 ASSET_LIMIT = 495  # Actual limit is 1000 but we upload 2 items per extension.
 UPLOAD_CHUNK_SIZE = 80
@@ -32,8 +34,12 @@ current_sha_short = current_sha[:7]
 # from the source tree, which a diff against the empty tree can't see.
 full_rebuild = sys.argv[3] == "true"
 
-with REPO_DIR.joinpath("index.json").open() as f:
-    remote_proto = json_format.Parse(f.read(), index_pb2.Index())
+index_json_path = REPO_DIR / "index.json"
+if index_json_path.exists() and index_json_path.read_text(encoding="utf-8").strip():
+    remote_proto = json_format.Parse(index_json_path.read_text(encoding="utf-8"), index_pb2.Index())
+else:
+    # A new/empty distribution branch has no prior index to merge.
+    remote_proto = index_pb2.Index()
 
 remote_extensions = {
     ext.packageName: ext for ext in remote_proto.extensionList.extensions
@@ -169,13 +175,16 @@ final_extensions.extend(
 final_extensions.extend(ext for ext, _, _, _ in new_extensions)
 final_extensions.sort(key=lambda ext: ext.packageName)
 
+signing_fingerprint = os.environ.get("SIGNING_KEY_FINGERPRINT", "").strip().lower()
+if not re.fullmatch(r"[0-9a-f]{64}", signing_fingerprint):
+    raise ValueError("SIGNING_KEY_FINGERPRINT must be the 64-character SHA-256 fingerprint of the APK signing certificate")
+
 index = index_pb2.Index(
-    name="Keiyoushi",
-    badgeLabel="KEI",
-    signingKey="9add655a78e96c4ec7a53ef89dccb557cb5d767489fac5e785d671a5a75d4da2",
+    name="inipew/extensions",
+    badgeLabel="INI",
+    signingKey=signing_fingerprint,
     contact=index_pb2.Contact(
-        website="https://keiyoushi.github.io",
-        discord="https://discord.gg/3FbCpdKbdY",
+        website="https://github.com/inipew/extensions",
     ),
     extensionList=index_pb2.ExtensionList(extensions=final_extensions),
 )
@@ -236,7 +245,7 @@ def create_release(tag: str):
         "--title",
         f"Repository Update {tag}",
         "--notes",
-        f"Automated update from keiyoushi/extensions-source@{current_sha}",
+        f"Automated update from inipew/extensions-source@{current_sha}",
     )
 
 
