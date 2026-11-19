@@ -102,7 +102,8 @@ for info_file in ARTIFACTS_DIR.glob("**/keiyoushi-source-info.json"):
     content_hash = info["contentHash"]
     remote_ext = remote_extensions.get(package_name)
     changed = (
-        remote_ext is None
+        full_rebuild
+        or remote_ext is None
         or remote_ext.versionCode != info["versionCode"]
         or release_assets.get(package_name) != content_hash
     )
