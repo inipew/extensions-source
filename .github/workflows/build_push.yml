@@ -9,6 +9,7 @@ on:
       - '!**.md'
       - '!.github/**'
       - '.github/scripts/**'
+      - '.github/extension-modules.txt'
       - '!.github/scripts/audit-packages.py'
       - '!.github/scripts/cleanup-releases.py'
       - '.github/workflows/build_push.yml'
