@@ -248,9 +248,28 @@ def create_matrix(modules: list[str]) -> dict:
     }
 
 
+def filter_target_extensions(modules: list[str], deleted: list[str]) -> tuple[list[str], list[str]]:
+    """Limit published builds to the extensions explicitly maintained by this fork."""
+    allowlist_path = Path(".github/extension-modules.txt")
+    allowed_modules = {
+        line.strip()
+        for line in allowlist_path.read_text("utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    }
+    allowed_suffixes = {
+        resolve_module_suffix("", *module.removeprefix(":src:").split(":", 1))
+        for module in allowed_modules
+    }
+    return (
+        sorted(set(modules) & allowed_modules),
+        sorted(set(deleted) & allowed_suffixes),
+    )
+
+
 def main() -> None:
     _, ref = sys.argv
     modules, deleted, lint_modules, is_full_rebuild = get_module_list(ref)
+    modules, deleted = filter_target_extensions(modules, deleted)
 
     matrix = create_matrix(modules)
 
