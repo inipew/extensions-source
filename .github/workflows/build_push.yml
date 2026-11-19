@@ -220,19 +220,20 @@ jobs:
           DELETE: ${{ needs.prepare.outputs.delete }}
           FULL_REBUILD: ${{ needs.prepare.outputs.full_rebuild }}
           GH_TOKEN: ${{ secrets.BOT_PAT }}
+          SIGNING_KEY_FINGERPRINT: ${{ secrets.SIGNING_KEY_FINGERPRINT }}
         run: |
           cd repo
           python -m pip install --user --upgrade protobuf
           python -u ../main/.github/scripts/publish-repo.py "$DELETE" "$GITHUB_SHA" "$FULL_REBUILD"
-          git config --global user.email "156378334+keiyoushi-bot@users.noreply.github.com"
-          git config --global user.name "keiyoushi-bot"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
           git status
           if [ -n "$(git status --porcelain)" ]; then
             git add .
             git commit -m "Update extensions repo"
             git push
-            curl https://purge.jsdelivr.net/gh/keiyoushi/extensions@repo/index.json
-            curl https://purge.jsdelivr.net/gh/keiyoushi/extensions@repo/index.pb
+            curl https://purge.jsdelivr.net/gh/inipew/extensions@repo/index.json
+            curl https://purge.jsdelivr.net/gh/inipew/extensions@repo/index.pb
           else
             echo "No changes to commit"
           fi
