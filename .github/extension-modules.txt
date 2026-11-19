@@ -1,0 +1,16 @@
+# Only these 15 modules are built and published by inipew/extensions.
+:src:en:asurascans
+:src:id:cosmicscansid
+:src:en:flamecomics
+:src:en:suryascans
+:src:en:hivescans
+:src:id:ikiru
+:src:id:kiryuu
+:src:id:komikav
+:src:id:komikindoid
+:src:en:mangarawclub
+:src:en:manhwatop
+:src:id:ngomik
+:src:en:rizzcomic
+:src:id:shinigami
+:src:id:voratoon
